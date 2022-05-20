@@ -1,25 +1,57 @@
-import { Card, CardType } from './Card'
-import { Player, PlayerType } from './Player'
-
+import { Card, cardConfigAttackHand, cardConfigAttackHandDouble } from './Card'
+import { Character } from './Character'
+import { EventList, Event } from './Event'
+interface GameConfig {
+    subEvent?: (event: Event) => void
+}
 export class Game {
-    players: Player[] = []
+    characters: Character[] = []
+    player: Character
+    robot: Character
+    eventList = new EventList()
+    subEvent?: (event: Event) => void
 
-    init = () => {
-        console.log('Game init')
-        const player1 = new Player({
-            type: PlayerType.HUMAN
+    constructor ({ subEvent }: GameConfig) {
+        this.subEvent = subEvent
+        const player = new Character({
+            game: this,
+            name: 'player',
+            isPlayer: true
         })
-        const player2 = new Player({
-            type: PlayerType.COMPUTER
+        const robot = new Character({
+            game: this,
+            name: 'robot'
         })
+        this.player = player
+        this.robot = robot
+        this.characters.push(player, robot)
+        player.setCardPool([
+            new Card(cardConfigAttackHand(player, robot)),
+            new Card(cardConfigAttackHand(player, robot)),
+            new Card(cardConfigAttackHand(player, robot)),
+            new Card(cardConfigAttackHand(player, robot)),
+            new Card(cardConfigAttackHand(player, robot))
+        ])
+        robot.setCardPool([
+            new Card(cardConfigAttackHand(robot, player)),
+            new Card(cardConfigAttackHandDouble(robot, player)),
+            new Card(cardConfigAttackHandDouble(robot, player)),
+            new Card(cardConfigAttackHandDouble(robot, player)),
+            new Card(cardConfigAttackHandDouble(robot, player))
+        ])
 
-        player1.addCard(new Card({ type: CardType.ATTACK, number: 1 }))
-        player1.addCard(new Card({ type: CardType.HEAL, number: 2 }))
-
-        player2.addCard(new Card({ type: CardType.ATTACK, number: 2 }))
-        player2.addCard(new Card({ type: CardType.HEAL, number: 1 }))
-        this.players.push(player1, player2)
+        this.characters.forEach(character => character.drawCard())
     }
 
-    getPlayers = () => this.players
+    pushEvent = (event: Event) => {
+        this.eventList.push(event)
+        this.subEvent?.(event)
+    }
+
+    setSubEvent = (subEvent: (event: Event) => void) => {
+        this.subEvent = subEvent
+    }
+
+    getCharacters = () => this.characters
+    getEventList = () => this.eventList.list
 }
