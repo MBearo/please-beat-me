@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Game } from '@/modules/Game'
 import { Player } from '@/modules/Player'
-import { Card as CardCom } from 'antd'
-import { EditOutlined } from '@ant-design/icons'
+import { Button, Card as CardCom } from 'antd'
 import { Card, CardType } from '@/modules/Card'
 import { clone } from 'lodash'
 
@@ -18,7 +17,15 @@ export default function Home () {
     }
     // 这个逻辑应该在game里
     const action = (player:Player, card:Card) => {
-        card.useTo(player)
+        const enemy = game.getPlayers().find(p => p !== player)
+        switch (card.type) {
+        case CardType.ATTACK:
+            enemy && card.useTo(enemy)
+            break
+        case CardType.HEAL:
+            card.useTo(player)
+            break
+        }
         reRender()
     }
     return (
@@ -26,9 +33,7 @@ export default function Home () {
             {
                 players.map(player => (
                     <div key={player.type}>
-                        <CardCom
-                            title={player.type}
-                        >
+                        <CardCom title={player.type}>
                             <div>HP:{player.HP}</div>
                         </CardCom>
                         <div className='flex'>
@@ -38,7 +43,7 @@ export default function Home () {
                                         key={card.type}
                                         title={card.type}
                                         actions={[
-                                            <EditOutlined key="edit" onClick={() => action(player, card)}/>
+                                            <Button key="edit" onClick={() => action(player, card)}>使用</Button>
                                         ]}
                                     >
                                         <div>number:{card.number}</div>
