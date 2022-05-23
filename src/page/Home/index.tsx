@@ -1,8 +1,7 @@
 /* eslint-disable react/jsx-key */
 import { Game } from '@/modules/Game'
 import { Avatar, Button, Card as CardCom, List } from 'antd'
-import { clone } from 'lodash'
-import React, { useState } from 'react'
+import React from 'react'
 interface HomeProps {
     game: Game
     update?: number
